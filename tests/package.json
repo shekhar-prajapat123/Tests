@@ -1,0 +1,17 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "Lambda function for generating and exporting leave reports.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Backend Engineer",
+  "license": "ISC",
+  "dependencies": {
+    "json2csv": "^5.0.7"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
