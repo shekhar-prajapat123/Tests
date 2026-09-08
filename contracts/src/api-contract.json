@@ -1,0 +1,196 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Leave Management System API - Reports",
+    "version": "1.0.0",
+    "description": "API contracts for generating and exporting leave reports."
+  },
+  "paths": {
+    "/reports": {
+      "get": {
+        "summary": "Generate and Export Comprehensive Leave Reports",
+        "description": "Generates a report based on specified criteria and returns it as a downloadable file (CSV or Excel).",
+        "operationId": "getLeaveReport",
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ReportType"
+            },
+            "description": "The type of report to generate."
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ReportFormat"
+            },
+            "description": "The file format for the exported report."
+          },
+          {
+            "in": "query",
+            "name": "departmentId",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The unique ID of the department. Required only when report `type` is 'DEPARTMENT_LEAVE'."
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The unique ID of the employee. Required only when report `type` is 'EMPLOYEE_LEAVE'."
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "description": "The month for the report (1-12). Required only when report `type` is 'MONTHLY_LEAVE'."
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 2024
+            },
+            "description": "The year for the report. Required only when report `type` is 'MONTHLY_LEAVE'."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful report download. The response body is the file content.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "CSV file content. See `DepartmentLeaveReportRow`, `MonthlyLeaveReportRow`, or `EmployeeLeaveReportRow` in types.ts for column structure."
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Excel (.xlsx) file content. See `DepartmentLeaveReportRow`, `MonthlyLeaveReportRow`, or `EmployeeLeaveReportRow` in types.ts for column structure."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Invalid parameters provided (e.g., missing `departmentId` for a department report).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Client is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Client does not have administrator privileges to access this resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. An entity specified in the parameters (e.g., `departmentId`, `employeeId`) could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ReportType": {
+        "type": "string",
+        "enum": [
+          "DEPARTMENT_LEAVE",
+          "MONTHLY_LEAVE",
+          "EMPLOYEE_LEAVE"
+        ],
+        "description": "Corresponds to FR-021."
+      },
+      "ReportFormat": {
+        "type": "string",
+        "enum": [
+          "CSV",
+          "XLSX"
+        ],
+        "description": "Corresponds to FR-022 (XLSX) and FR-023 (CSV)."
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "example": "departmentId is required for DEPARTMENT_LEAVE report type"
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-05-21T10:00:00.000Z"
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/v1/reports?type=DEPARTMENT_LEAVE&format=CSV"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "error",
+          "timestamp",
+          "path"
+        ]
+      }
+    }
+  }
+}
